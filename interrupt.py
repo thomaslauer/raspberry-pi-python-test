@@ -3,8 +3,6 @@ import time
 
 GPIO.setmode(GPIO.BCM)
 
-start = time.time()
-
 class Encoder:
     positionKey = [[0,0], [1,0], [1,1], [0,1]]
 
@@ -30,13 +28,8 @@ class Encoder:
 
         if((self.lastPosition + 1) % 4 == self.currentPosition):
             self.pos = self.pos + 1
-            #print("Moving Right")
         else:
             self.pos = self.pos - 1
-            #print("Moving Left")
-        global start
-        print(str(channelA) + " " + str(channelB) + " " + str(1/(time.time() - start)) + " " + str(self.pos))
-        start = time.time()
     
     def findPosition(self, channelA, channelB):
         currentList = [channelA, channelB]
