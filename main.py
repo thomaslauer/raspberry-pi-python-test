@@ -12,4 +12,4 @@ a = Encoder(17, 18)
 
 while True:
     time.sleep(0.1)
-    print(a.pos)
+    print(a.position)
