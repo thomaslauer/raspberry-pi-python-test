@@ -11,5 +11,5 @@ GPIO.setup(18, GPIO.IN)
 a = Encoder(17, 18)
 
 while True:
-    time.sleep(0.1)
+    time.sleep(0.01)
     print(a.position)
