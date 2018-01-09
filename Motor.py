@@ -37,6 +37,7 @@ class Encoder:
             self.position = self.position - 1
     
     def findRotationPos(self, channelA, channelB):
+        # Make a list of the current positions
         currentList = [channelA, channelB]
         stage = -1
         for i in range(4):
