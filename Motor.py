@@ -22,12 +22,15 @@ class Encoder:
         self.position = 0
     
     def gpio_callback(self, gpio_id):
+        # Get inputs from the channels
         channelA = GPIO.input(self.chanA)
         channelB = GPIO.input(self.chanB)
 
+        # update current and last positions
         self.lastPosition = self.currentStage
         self.currentStage = self.findRotationPos(channelA, channelB)
 
+        # Find if we're moving clockwise or counter clockwise
         if((self.lastPosition + 1) % 4 == self.currentStage):
             self.position = self.position + 1
         else:
