@@ -7,9 +7,12 @@ t = 0.01
 class Robot:
 
     def __init__(self, cogLength, mass):
-        # need to add starting positions (velocity, angle)
-        # maybe make a way to do list of commands to execute at
-        # a certain time, etc
+        """"
+        need to add starting positions (velocity, angle)
+        maybe make a way to do list of commands to execute at
+        a certain time, etc
+        """
+        
         self.cogLength = cogLength
         self.mass = mass
         self.angle = math.pi/2
@@ -17,6 +20,11 @@ class Robot:
         self.angularAcceleration = 0
     
     def updatePhysics(self):
+        """
+        Calculates the change in physics. Uses the equation (g/l)sin(theta)
+        to find the angluar acceleration of the inverted pendulum, then performs
+        a lazy integration
+        """
         self.angularAcceleration = (g/self.cogLength) * math.sin(self.angle)
         self.angularVelocity += self.angularAcceleration * t
         self.angle += self.angularVelocity * t
