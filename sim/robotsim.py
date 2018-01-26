@@ -1,7 +1,16 @@
 import math
+import numpy as np
+import matplotlib.pyplot as plt
 
 g = 9.8
 t = 0.01
+
+ltime = []
+langle = []
+lvelocity = []
+lacceleration = []
+lerror = []
+
 
 debug = True
 
@@ -21,25 +30,26 @@ class PID:
         
         self.numCycles = 0
     
-    def calculatePID(self, val):
+    def calculatePID(self, currentValue):
 
-        error = val - self.target
+        error = self.target - currentValue
 
         self.integralError += error * t
 
         proportional = error * self.kp * t
         integral = self.integralError * self.ki
-        derivative = self.kd * (val - self.lastVal) / t
+        derivative = self.kd * (currentValue - self.lastVal) / t
 
         if(self.numCycles == 0):
             # ignore d output, we don't have any slope to calculate
             derivative = 0
 
         if(debug):
-            print("p: {:2.4f} i: {:2.4f} d: {:2.4}", proportional, integral, derivative)
+            print("p: {:2.4f} i: {:2.4f} d: {:2.4f}".format(proportional, integral, derivative))
 
-        self.lastVal = val
+        self.lastVal = currentValue
         self.numCycles += 1
+        lerror.append(error)
         return proportional + integral + derivative
 
     def resetPID(self):
@@ -60,9 +70,13 @@ class Robot:
 
         self.controller = controller
 
-        self.angle = 0.001
-        self.angularVelocity = 0
+        self.angle = 0
+        self.angularVelocity = 0.01
         self.angularAcceleration = 0
+
+        self.angularInertia = self.mass * self.cogLength * self.cogLength
+
+        self.controllerOutput = 0
     
     def updatePhysics(self):
         """
@@ -71,8 +85,14 @@ class Robot:
         a lazy integration
         """
         self.angularAcceleration = (g/self.cogLength) * math.sin(self.angle)
+        self.angularAcceleration += self.controllerOutput
+
         self.angularVelocity += self.angularAcceleration * t
         self.angle += self.angularVelocity * t
+
+        lacceleration.append(self.angularAcceleration)
+        lvelocity.append(self.angularVelocity)
+        langle.append(self.angle)
     
     def updateController(self):
         """
@@ -81,21 +101,50 @@ class Robot:
         TODO figure out what the PID should be controlling (acceleration or velocity)
         and add that to the controls.
         """
-        pidVal = self.controller.calculatePID(self.angle)
+        pidVal = self.controller.calculatePID(self.angle-0.05)
+        self.controllerOutput = pidVal
+
+        # torque = self.cogLength * pidVal * math.cos(self.angle)
+
+        # appliedAcceleration = torque / self.angularInertia
+
+        # self.angularAcceleration += appliedAcceleration
+
         return pidVal
     
 
 def main():
-    robot = Robot(0.5, 1, PID(100, 10, 1))
+    robot = Robot(0.3, 1, PID(5500, 5, -2))
 
     # define the time in seconds of the simulation
-    time = 5
+    time = 20
 
     for i in range(int(time / t)):
         robot.updatePhysics()
-        print("Angle: {:2.4f}  Velocity: {:2.4f}  Acceleration: {:2.4f}"
-            .format(robot.angle * 180 / math.pi, robot.angularVelocity, robot.angularAcceleration))
+
+        controllerOutput = robot.updateController()
         
-        print("Controller output: {:2.8f}".format(robot.updateController()))
+        if(debug):
+            print("Angle: {:2.4f}  Velocity: {:2.4f}  Acceleration: {:2.4f}"
+                .format(robot.angle * 180 / math.pi, robot.angularVelocity, robot.angularAcceleration))
+
+            print("Controller output: {:2.8f}".format(controllerOutput))
+        
+        
+        ltime.append(i * t)
 
 main()
+
+plt.subplot(221)
+plt.plot(ltime, langle)
+
+plt.subplot(222)
+plt.plot(ltime, lvelocity)
+
+plt.subplot(223)
+plt.plot(ltime, lacceleration)
+
+plt.subplot(224)
+plt.plot(ltime, lerror)
+
+plt.show()
