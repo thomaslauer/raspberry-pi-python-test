@@ -1,8 +1,13 @@
 import logging
 import sys
 import time
+import RPi.GPIO as GPIO
 
 from Adafruit_BNO055 import BNO055
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(23, GPIO.OUT)
+GPIO.output(23, GPIO.HIGH)
 
 bno = BNO055.BNO055(serial_port='/dev/ttyS0', rst=18)
 
